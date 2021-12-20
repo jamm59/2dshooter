@@ -20,7 +20,7 @@ class Weapons:
         # self.FGUN = pygame.transform.scale(pygame.image.load(f'{__DIR}/firegun.png'),(width,height))
         # self.MGUN = pygame.transform.scale(pygame.image.load(f'{__DIR}/mgun.png'),(width,height))
         # self.PAUSE = pygame.transform.scale(pygame.image.load(f'{__DIR}/pause.png'),(width,height))
-        self.B1_IMG = pygame.image.load(f'{__DIR}/bullet1.png')
+        self.B1_IMG = pygame.image.load(f'{__DIR}/bullet.png')
         self.E_IMG = pygame.image.load(f'{__DIR}/enemy.png')
         # self.BULL2 = pygame.transform.scale(pygame.image.load(f'{__DIR}/bullet2.png'),(width,height))
 

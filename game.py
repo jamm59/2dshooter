@@ -12,7 +12,6 @@ def get_angle(weapn):
     angle = math.floor(math.degrees(angle))    
     return round(angle)
 
-
 def draw(player):
     mouse_pos = pygame.mouse.get_pos()
     WINDOW.fill(BLACK)
@@ -20,8 +19,6 @@ def draw(player):
     player.draw_weapons()
     player.update_bullet()
     pygame.display.update()
-
-    
 
 def game_paused():
     WINDOW.blit(PAUSE_FONT.render(f'GAME PAUSED',True,WHITE),
@@ -68,12 +65,6 @@ def main():
         draw(player)
 
     pygame.quit()
-    
-    
-    
-    
-    
-    
-    
+      
 if __name__ == '__main__':
     main()
