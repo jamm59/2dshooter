@@ -19,14 +19,16 @@ class Weapons:
         # self.ASSIST = pygame.transform.scale(pygame.image.load(f'{__DIR}/assist.png'),(width,height))
         # self.FGUN = pygame.transform.scale(pygame.image.load(f'{__DIR}/firegun.png'),(width,height))
         # self.MGUN = pygame.transform.scale(pygame.image.load(f'{__DIR}/mgun.png'),(width,height))
-        # self.PAUSE = pygame.transform.scale(pygame.image.load(f'{__DIR}/pause.png'),(width,height))
+        self.PAUSE = pygame.image.load(f'{__DIR}/pause.png')
         self.B1_IMG = pygame.image.load(f'{__DIR}/bullet.png')
         self.E_IMG = pygame.image.load(f'{__DIR}/enemy.png')
+        self.TARGET = pygame.image.load(f'{__DIR}/target.png')
         # self.BULL2 = pygame.transform.scale(pygame.image.load(f'{__DIR}/bullet2.png'),(width,height))
 
 weapon = Weapons()
 #font 
 PAUSE_FONT = pygame.font.SysFont('georgia', 60)
+SCORE = pygame.font.SysFont('calibri', 150)
 #variables
 VAR = Variables()
 #clock and fps
@@ -40,3 +42,5 @@ pygame.display.set_caption('Super Hash')
 #COLORS
 WHITE = (255,255,255)
 BLACK = (0,0,0)
+BACK = (250, 237, 240)
+RED = (255, 95, 126)

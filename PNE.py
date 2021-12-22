@@ -3,49 +3,33 @@ import math
 import random
 
 class Bulletobject:
-    def __init__(self,image,rect,position,velocity):
-        self.image,self.rect,self.pos,self.vel = image,rect,position,velocity
+    def __init__(self,image,rect,position,velocity,angle):
+        self.rect,self.pos,self.vel = rect,position,velocity
+        self.radius,self.width,self.angle = 5, 3,angle
+        self.collided = False
 
     def get_angle(self,enemy):
-        ex,ey = enemy.x,enemy.y
+        ex,ey = enemy[0],enemy[1]
         x,y = self.rect.x,self.rect.y
-        new_y,new_x = ex - y, ey - x
-        angle = math.atan2(-new_y,new_x)
-        # returns angle in radians
+        d_y,d_x = ey - y, ex - x
+        angle = math.atan2(-d_y,d_x)
         return round(angle)
 
-    def rotate_bullet(self,x,y):
-        angle = 0
-        if x == -1 and y == -1:
-            angle = 45    # top left
-        elif x == -1 and y == 0:
-            angle = 90    # left
-        elif x == -1 and y == 1:
-            angle = 135    # bottom left
-        elif x == 0 and y == -1:
-            angle = 0    # top
-        elif x == 0 and y == 0:
-            angle = angle   # no position
-        elif x == 0 and y == 1:
-            angle = 180   #  bottom
-        elif x == 1 and y == -1:
-            angle = -45   # top right
-        elif x == 1 and y == 0:
-            angle = -90   # right 
-        elif x == 1 and y == 1:
-            angle = -135   # bottom right
-        
-        self.image = pygame.transform.rotozoom(weapon.B1_IMG,angle,0.4)
+    def rotate_bullet(self,angle):
+        angle = round(math.degrees(angle - 90))
+        self.image = pygame.transform.rotozoom(weapon.B1_IMG,angle,0.3)
 
     def follow_enemy(self,angle):
-        new_x,new_y = math.floor(math.cos(angle)),math.floor(math.sin(angle))
-        self.rotate_bullet(new_x,new_y)
+        new_x,new_y = math.cos(angle),math.sin(angle)
+        #changing the direction of the bullet before it follow the enemy
+        self.vel = 20
         self.rect.x +=  new_x * self.vel
         self.rect.y -= new_y * self.vel
 
 
 class Player:
     def __init__(self,width,height,x,y):
+        self.width,self.height = width,height
         self.x,self.y =x, y
         self.player = pygame.Rect(x,y,width,height)
         self.acc = .85
@@ -53,6 +37,7 @@ class Player:
         self.jump_vel = -20
         self.can_jump = False
         self.maxx_height = self.y - 200
+        self.score = 0
 
         # players weapon
         self.weapon_img = None
@@ -60,10 +45,14 @@ class Player:
 
         # player bullet
         self.bull_list = []
-        self.c = 10
+        self.c = 20
+        self.bull_angle = 90
+        
 
     def draw(self):
-        pygame.draw.rect(WINDOW,WHITE,self.player) 
+        pygame.draw.rect(WINDOW,RED,self.player) 
+        self.another = pygame.Rect(self.player.x+4,self.player.y+5,self.width-8,self.height-8)
+        pygame.draw.rect(WINDOW,WHITE,self.another)
 
     def move(self):
         keys_pressed = pygame.key.get_pressed()
@@ -88,54 +77,58 @@ class Player:
 
     def rotate_weapon(self,weapon,angle):
         pos = self.weapon_pos
+        self.bull_angle = math.radians(angle)
         angle -= 55
         new_w = pygame.transform.rotozoom(weapon, angle,1)
         self.weapon_img = new_w
     
     def shoot(self):
-        self.bullet = pygame.transform.rotozoom(weapon.B1_IMG,0,0.4)
-        pos = (self.player.x,self.player.y)
+        self.bullet = pygame.transform.rotozoom(weapon.B1_IMG,0,0.3)
+        pos = (self.player.x + 40,self.player.y + 20)
         rec = self.bullet.get_rect(center=pos)
-
-        if len(self.bull_list) < 5:
-            p_weapon = Bulletobject(self.bullet,rec,pos,self.c)
+        angle = self.bull_angle
+        self.bull_angle = 90
+        if len(self.bull_list) < 20:
+            p_weapon = Bulletobject(self.bullet,rec,pos,self.c,angle)
             self.bull_list.append(p_weapon)
 
-    def update_bullet(self):
+    def update_bullet(self,Enemy):
+        count = 0
         for bullet in self.bull_list:
-            bullet.rect.y -= bullet.vel
-            WINDOW.blit(bullet.image, bullet.rect)
-            if bullet.rect.y <= 100:
-                bullet.image = pygame.transform.rotozoom(weapon.B1_IMG,180,0.4)
-                bullet.vel = -bullet.vel
-            if bullet.rect.y >= W_HEIGHT - 100:
-                bullet.image = pygame.transform.rotozoom(weapon.B1_IMG,0,0.4)
-                bullet.vel = -bullet.vel
-                # self.bull_list.remove([bullet,rec,pos,vel])
+            bullet.follow_enemy(bullet.angle)
+            for enemy in Enemy.Elist:   
+                if pygame.Rect.colliderect(bullet.rect,enemy.rect):
+                    Enemy.Elist.remove(enemy)
+                    self.score += 1
+                    bullet.collided = True
+                elif pygame.Rect.colliderect(bullet.rect,enemy.rect) or bullet.rect.y <= 0:    
+                    bullet.width = 0
+                    try:
+                        self.bull_list.remove(bullet)
+                    except ValueError as err:
+                        pass
+            pygame.draw.circle(WINDOW,BLACK,(bullet.rect.x,bullet.rect.y+1),bullet.radius,bullet.width)
+            if bullet.radius >= 500:
+                bullet.collided = False
+                
 
-
-        
 
 class Enemyobject:
     def __init__(self,image,rect,pos,speed):
-        self.image,self.rect,self.pos,self.speed = image,rect,pos,speed
+        self.image,self.rect,self.pos,self.vel = image,rect,pos,speed
         
 class Enemy:
     def __init__(self):
         self.Elist = []  
-        self.vel = 1 
-        self.count = 10
+        self.vel = 5
+        self.count = 100
           
     def create_enemy(self):
         pos = (self.count,20)
-        if self.count <= W_WIDTH:
-            self.count += 20
-        else:
-            self.count = 10
-
+        self.count = random.randint(100,W_WIDTH - 100)
         rect = weapon.E_IMG.get_rect(center=pos)
         enemy = Enemyobject(weapon.E_IMG,rect,pos,self.vel)
-        if len(self.Elist) <= 5:
+        if len(self.Elist) <= 20 and random.randint(0,10) == 5:
             self.Elist.append(enemy)
     
     def draw(self):
@@ -145,4 +138,6 @@ class Enemy:
     def move(self):
         for enemy in self.Elist:
             enemy.rect.y += enemy.vel
+            if enemy.rect.y >= W_HEIGHT:
+                self.Elist.remove(enemy)
 

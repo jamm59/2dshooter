@@ -12,30 +12,38 @@ def get_angle(weapn):
     angle = math.floor(math.degrees(angle))    
     return round(angle)
 
-def draw(player):
-    mouse_pos = pygame.mouse.get_pos()
-    WINDOW.fill(BLACK)
+def draw(player,enemy):
+    mx,my = pygame.mouse.get_pos()
+    WINDOW.fill(BACK)
+    s_pos = ((W_WIDTH // 2)-50, (W_HEIGHT // 2 ) - 100)
+    WINDOW.blit(SCORE.render(f'{player.score}',True,RED),s_pos)
     player.draw()
     player.draw_weapons()
-    player.update_bullet()
+    player.update_bullet(enemy)
+    enemy.draw()
+    WINDOW.blit(weapon.TARGET,(mx-11,my-11))
     pygame.display.update()
 
 def game_paused():
-    WINDOW.blit(PAUSE_FONT.render(f'GAME PAUSED',True,WHITE),
-    ((VAR.width // 2) - 200, (VAR.height // 2) - 100))
+    pos = ((VAR.width // 2) - 300, (VAR.height // 2)-150)
+    hand = pygame.transform.rotozoom(weapon.PAUSE,0,0.5)
+    WINDOW.blit(hand,(pos[0]+125,pos[1]))
+    message = 'GAME             PAUSED'
+    WINDOW.blit(PAUSE_FONT.render(message,True,BLACK),pos)
     pygame.display.update()
 
-def handle_controlls(player):
+def handle_controlls(player,enemy):
+    enemy.move()
     player.move()
 
 def main():
     player = Player(50,70,W_WIDTH // 2,W_HEIGHT-100)
     #players initial weapon
     w_pos = (player.player.x+10,player.player.y + 25)
-    player.update_weapon(
-        weapon.R_IMG,
-        w_pos
-        )
+    player.update_weapon(weapon.R_IMG,w_pos)
+    #enemy 
+    enemy = Enemy()
+
     running = True
     paused = False
     while running:
@@ -61,8 +69,9 @@ def main():
 
         angle = get_angle(player.player)
         player.rotate_weapon(weapon.R_IMG,angle)
-        handle_controlls(player)
-        draw(player)
+        enemy.create_enemy()
+        handle_controlls(player,enemy)
+        draw(player,enemy)
 
     pygame.quit()
       
