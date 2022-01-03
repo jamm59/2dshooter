@@ -14,7 +14,7 @@ def get_angle(weapn):
 def draw(player,enemy,block):
     mx,my = pygame.mouse.get_pos()
     WINDOW.fill(VARIABLE.BACKGROUND)
-    s_pos = (40, (VARIABLE.HEIGHT // 2 ) - 200)
+    s_pos = (40, (VARIABLE.HEIGHT // 2 ) - 180)
     WINDOW.blit(VARIABLE.SCORE.render(f'{player.score}',True,VARIABLE.RED),s_pos)
     player.draw()
     player.draw_weapons()
@@ -27,10 +27,26 @@ def draw(player,enemy,block):
     pygame.mouse.set_visible(False)
 
 def game_paused():
-    pos = ((VARIABLE.WIDTH // 2), (VARIABLE.HEIGHT // 2))
-    WINDOW.blit(WEAPON.PAUSE,(pos[0]+125,pos[1]))
-    message = 'GAME  PAUSED'
-    WINDOW.blit(VARIABLE.PAUSE.render(message,True,VARIABLE.GREEN),pos)
+    if VARIABLE.pause_length < 400:
+        VARIABLE.pause_length += 25
+    #rect
+    pause_rect = pygame.Rect(VARIABLE.WIDTH-400,0,VARIABLE.pause_length,VARIABLE.HEIGHT)
+    main_rect = pygame.Rect(VARIABLE.WIDTH-350,100,200,70)
+    quit_rect = pygame.Rect(VARIABLE.WIDTH-350,210,200,70)
+    #display rect
+    pygame.draw.rect(WINDOW,VARIABLE.RED,pause_rect)
+    pygame.draw.rect(WINDOW,VARIABLE.WHITE,main_rect)
+    pygame.draw.rect(WINDOW,VARIABLE.WHITE,quit_rect)
+    #font
+    FONT = VARIABLE.PAUSE.render('GAME PAUSED',True,VARIABLE.WHITE)
+    FONT_MAIN = VARIABLE.PAUSE.render('   MENU',True,VARIABLE.BLACK)
+    FONT_QUIT = VARIABLE.PAUSE.render('   QUIT',True,VARIABLE.BLACK)
+    # display font
+    WINDOW.blit(FONT,(VARIABLE.WIDTH-380,10))
+    WINDOW.blit(FONT_MAIN,(main_rect.x,main_rect.y+20))
+    WINDOW.blit(FONT_QUIT,(quit_rect.x,quit_rect.y+20))
+    WINDOW.blit(WEAPON.PAUSE,(VARIABLE.WIDTH-300,VARIABLE.WIDTH // 2))
+    pygame.mouse.set_visible(True)
     pygame.display.update()
 
 def handle_controlls(player,enemy,block):
@@ -45,7 +61,7 @@ def handle_controlls(player,enemy,block):
     block.detect_collison1(enemy.Elist)
     block.detect_collison2(player)
 
-def game(): 
+def game(menu): 
     pygame.display.set_caption('Super Hash')
     # player object
     player = Player(50,80,40,VARIABLE.HEIGHT-100)
@@ -70,17 +86,16 @@ def game():
                     paused = not paused
                 if event.key == K_w:
                     player.can_jump = True
-                    #player.start_pos = player.player.y 
             if event.type == MOUSEBUTTONUP:
                 player.shoot()
         if paused:
             game_paused()
             continue
+        else:
+            VARIABLE.pause_length = 2
         if player.can_jump:
             player.jump()
         handle_controlls(player,enemy,block)
         draw(player,enemy,block)
-    pygame.quit()      
-
-if __name__ == '__main__':
-    game()
+        
+    menu.new_start = False      

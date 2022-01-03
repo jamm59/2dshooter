@@ -20,21 +20,28 @@ class VARS:
         self.BACKGROUND   =  (255, 249, 249)
     
         #font 
-        self.PAUSE = pygame.font.Font('assets/font/Zorque.otf', 50)
-        self.SCORE = pygame.font.Font('assets/font/Zorque.otf', 250)
+        self.PAUSE = pygame.font.Font('assets/font/JungleAdventurer.ttf', 50)
+        self.SCORE = pygame.font.Font('assets/font/JungleAdventurer.ttf', 300)
+        self.pause_complete = False
+        self.pause_length = 2
+        self.TITLE = pygame.font.Font('assets/font/bomb.ttf',150)
 
 class WeaponImage:
     def __init__(self):
         __DIR = 'assets'
         self.x,self.y = 0,0
+        self.YES = pygame.transform.rotozoom(pygame.image.load(f'{__DIR}/others/yes.png'),0,0.8)
+        self.NO = pygame.transform.rotozoom(pygame.image.load(f'{__DIR}/others/no.png'),0,0.6)
+        self.ARROW = pygame.transform.rotozoom(pygame.image.load(f'{__DIR}/others/arrow.png'),180,1.7)
         self.BLOCK = pygame.transform.scale(pygame.image.load(f'{__DIR}/weapons/block.png'),(200,50))
         self.R_IMG = pygame.image.load(f'{__DIR}/weapons/mgun.png')
-        self.PAUSE = pygame.image.load(f'{__DIR}/weapons/pause.svg')
+        self.PAUSE = pygame.image.load(f'{__DIR}/weapons/pause.png')
         self.BULLET = pygame.transform.scale(pygame.image.load(f'{__DIR}/weapons/bullet.png'),(20,30))
         self.N_BULLET = pygame.image.load(f'{__DIR}/weapons/new_bullet.png')
         self.E_IMG = pygame.image.load(f'{__DIR}/enemy/enemy.png')
         self.E1_IMG = pygame.image.load(f'{__DIR}/enemy/enemy1.png')
         self.E2_IMG = pygame.image.load(f'{__DIR}/enemy/enemy2.png')
+        self.MOUSE_P = pygame.image.load(f'{__DIR}/others/mouse-pointer.png')
         self.TARGET = pygame.image.load(f'{__DIR}/weapons/target.png')
 
 

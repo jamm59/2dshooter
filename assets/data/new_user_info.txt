@@ -1,0 +1,16 @@
+Hello and Welcome to this game called
+Super Hash,
+There's no explanation as to why 
+its called that, but
+Try it out and please leave some feedback
+You can find it on the website
+where you downloaded the game.
+There are a few bugs in the game, 
+I think that's all for now
+Your participation is greatly appreciated.
+My name is ....
+controlls 
+Use either d or right to move right 
+Use either a or left to move left 
+w or up to jump and finally 
+space to jump

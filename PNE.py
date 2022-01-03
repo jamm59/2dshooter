@@ -1,4 +1,4 @@
-import math,random,string
+import math,random,string,threading,time
 from REQ import *
 
 def distance(first,second):
@@ -305,19 +305,25 @@ class MenuInfo:
         self.rect = pygame.Rect(self.pos[0],self.pos[1],self.width,self.height)
         self.text_pos = (self.rect.x+50,self.rect.y+20)
         self.font = pygame.font.Font('assets/font/zorque.otf', 35)
-        self.radius = 20
+        self.radius = 0
         self.hover = False
+        self.color = None
 
 class Menu:
     def __init__(self):
-        self.menu_names = ['New Game','Load Game','   Store','   Options','   Quit']
+        self.menu_names = ['   Play','   Store','   Options','   Quit']
         self.menu_items = []
         self.counter = 1
         self.index = 1
+        self.arrow_rect = WEAPON.ARROW.get_rect(center=(0,0))
+        self.want_to_quit = False
+        self.quit = False
+        self.new_text = None
+        self.new_start = False
 
     def update_menu_items(self):
-        x = 100
-        y = 300
+        x = 80
+        y = 350
         for i,text in enumerate(self.menu_names):
             id = i + 1
             item = MenuInfo(text,(x,y),id)
@@ -328,15 +334,98 @@ class Menu:
         if item.id == self.index:
             item.rect.width,item.rect.height = 350,100
             item.font = pygame.font.Font('assets/font/zorque.otf', 40)
+            item.color = (0, 13, 107)
+            self.arrow_rect.x = 460
+            self.arrow_rect.y = item.rect.y - 5
         else:
             item.rect.width,item.rect.height = 300,80
             item.font = pygame.font.Font('assets/font/zorque.otf', 35)
+            item.color = (255, 150, 173)
+
     def draw(self):
         for item in self.menu_items:
             self.hover_animation_check(item)
-            pygame.draw.rect(WINDOW,VARIABLE.NAVY,item.rect,border_radius=item.radius)
+            pygame.draw.rect(WINDOW,item.color,item.rect,border_radius=item.radius)
             font = item.font.render(item.text,True,VARIABLE.WHITE)
             WINDOW.blit(font,item.text_pos)
+            WINDOW.blit(WEAPON.ARROW,self.arrow_rect)
 
+    def check_collision_with_mouse(self,event):
+        for item in self.menu_items:
+            if event.type == MOUSEBUTTONUP:
+                mpos = pygame.mouse.get_pos()
+                if pygame.Rect.collidepoint(item.rect,mpos):
+                    if item.text == '   Play':
+                        self.intro()
+                    elif item.text == '   Store':
+                        pass
+                    elif item.text == '   Options':
+                        pass
+                    else: # Quit
+                        self.want_to_quit = True
+        
+    def draw_quit(self):
+        FONT = pygame.font.Font('assets/font/JungleAdventurer.ttf', 50)
+        B = pygame.Rect(200 , 300, 500, 300)
+        pygame.draw.rect(WINDOW,(255, 188, 151),B)
+        WINDOW.blit(FONT.render("Are you sure you ",True,VARIABLE.WHITE),(B.x + 60, B.y + 50 ))
+        WINDOW.blit(FONT.render("want to Exit ?",True,VARIABLE.WHITE),(B.x + 60, B.y + 100))
+        yes = WEAPON.YES.get_rect(center=(B.x + 150, B.y + 200 ))
+        no = WEAPON.NO.get_rect(center=(B.x + 300, B.y + 200 ))
+        WINDOW.blit(WEAPON.YES,yes)
+        WINDOW.blit(WEAPON.NO,no)
+
+        mpos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()
+        if mouse_pressed[0]:
+            if pygame.Rect.collidepoint(yes,mpos):
+                self.quit = True
+            if pygame.Rect.collidepoint(no,mpos):
+                self.want_to_quit = False
+
+    def wait(self,text,count=0):
+        #this function will update the text after one sec
+        if count == len(text):
+            self.new_start = True
+            return 
+        else:
+            self.new_text = text[count]
+            count += 1
+            time.sleep(.5)
+            self.wait(text,count) 
+        
+    def draw_intro(self,text):
+        WINDOW.fill(VARIABLE.WHITE)
+        top,bottom = pygame.Rect(0,0,VARIABLE.WIDTH,150),pygame.Rect(0,VARIABLE.HEIGHT - 150,VARIABLE.WIDTH,150)
+        FONT = pygame.font.Font('assets/font/bomb.ttf',40)
+        FONT = FONT.render(self.new_text,True,VARIABLE.BLACK)
+        WINDOW.blit(FONT,(10,VARIABLE.HEIGHT // 2))
+        pygame.draw.rect(WINDOW,VARIABLE.BLACK,top)
+        pygame.draw.rect(WINDOW,VARIABLE.BLACK,bottom)
+        pygame.display.update()
+
+    def intro(self):
+        with open('assets/data/new_user_info.txt','r') as file:
+            intro_text = file.readlines()
+        intro_text = [i.strip() for i in intro_text]
+        new_thread = threading.Thread(target=self.wait,args=(intro_text,))
+        new_thread.start()
+        running = True
+        pause = False
+        while running:
+            CLOCK.tick(VARIABLE.FPS)
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    running = False 
+                if event.type == KEYDOWN:
+                    if event.key == K_SPACE:
+                        pause = not pause
+
+            if self.new_start:
+                running = False
+            self.draw_intro(intro_text)
+
+        
 
 
