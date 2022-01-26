@@ -1,6 +1,5 @@
 import threading
-from GAME import game
-from PNE import Menu
+from GAME import game,Menu
 from REQ import *
 
 def draw_tile(pos,color1,color2):
@@ -10,20 +9,19 @@ def draw_tile(pos,color1,color2):
     pygame.draw.rect(WINDOW,color1,rect1,border_radius=4)
     pygame.draw.rect(WINDOW,color2,rect2,border_radius=4)
 
-def draw(menu):
+def draw(menu,mouse_pos):
     WINDOW.fill(VARIABLE.WHITE)
     #drawing decorations for the menu ui
     draw_tile((VARIABLE.WIDTH-400,VARIABLE.HEIGHT-200),VARIABLE.RED,VARIABLE.YELLOW)
     draw_tile((40,180),VARIABLE.YELLOW,VARIABLE.RED)
     draw_tile((VARIABLE.WIDTH-250,300),VARIABLE.YELLOW,VARIABLE.RED)
-    T_FONT = VARIABLE.TITLE.render('SUPER HASH',True,VARIABLE.RED)
+    T_FONT = VARIABLE.TITLE.render('SUPER HASH',True,(0, 13, 107))
     WINDOW.blit(T_FONT,(80,40))
     menu.draw()
     if menu.want_to_quit:
-        menu.draw_quit()
-    mouse_pos = pygame.mouse.get_pos()
-    WINDOW.blit(WEAPON.MOUSE_P,mouse_pos)
-    pygame.mouse.set_visible(False)
+        menu.draw_quit(1)
+    # WINDOW.blit(WEAPON.MOUSE_P,mouse_pos)
+    #pygame.mouse.set_visible(False)
     pygame.display.update()
     
 def main(): 
@@ -33,6 +31,7 @@ def main():
     run = True
     while run:
         CLOCK.tick(VARIABLE.FPS)
+        mouse_pos = pygame.mouse.get_pos()
         for event in pygame.event.get():
             if event.type == QUIT:
                 run = False
@@ -52,7 +51,7 @@ def main():
             run = False
         if menu.new_start:
             game(menu)
-        draw(menu)
+        draw(menu,mouse_pos)
     
     pygame.quit()  
         

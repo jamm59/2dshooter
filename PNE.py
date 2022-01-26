@@ -58,6 +58,7 @@ class Player:
         # block 
         self.block_pos = None
         self.just_left_block = False
+        self.circle = Circle()
 
     def draw(self):
         b_radius = 2
@@ -122,12 +123,16 @@ class Player:
                     bullet.radius = 0
                     self.score += 1
                     bullet.collided = True
+                    self.circle.add_circle((enemy.rect.x,enemy.rect.y))
                 if pygame.Rect.colliderect(bullet.rect,enemy.rect):    
                     try:
                         self.bull_list.remove(bullet)
                     except ValueError as err:
                         pass
-            WINDOW.blit(bullet.image,bullet.rect)    
+            
+            WINDOW.blit(bullet.image,bullet.rect)   
+        self.circle.draw() 
+
 
 class Enemyobject:
     def __init__(self,image,rect,pos,speed,move=True):
@@ -245,10 +250,10 @@ class Block:
                     player.just_left_block = False
                 # what should happen if player collides with the block from left
                 elif player.player.right >= block.rect.left :
-                    print('Left')
+                    player.player.x -= 50
                 # what should happen if player collides with the block from right
                 elif player.player.left <= block.rect.right :
-                    print('Right')
+                    player.player.x += 50
             # if the player jumped and if the player is not at the ground level the the player just left the block
             if player.can_jump and not (player.player.y >= VARIABLE.HEIGHT - 100):
                 player.just_left_block = True
@@ -282,19 +287,22 @@ class Circle:
     def __init__(self):
         self.all_circles = []
 
-    def add_circle(self):
-        new_c = Circleobject()
+    def add_circle(self,pos):
+        new_c = Circleobject(pos)
         self.all_circles.append(new_c)
 
     def draw(self):
         for circle in self.all_circles:
-            if circle.radius >= 100:
+            if circle.radius >= 500:
                 try:
                     self.all_circles.remove(circle)
                 except ValueError:
                     pass
-            pygame.draw.circle(WINDOW,VARIABLE.BLACK,circle.pos, circle.radius,circle.width)
-            self.radius += 5
+                else:
+                    continue
+
+            pygame.draw.circle(WINDOW,VARIABLE.S_BLUE,circle.pos, circle.radius,circle.width)
+            circle.radius += 10
 
 class MenuInfo:
     def __init__(self,text,pos,id):
@@ -320,6 +328,17 @@ class Menu:
         self.quit = False
         self.new_text = None
         self.new_start = False
+        # if its a new game
+        file = open('assets/data/new_game.txt','r')
+        # if 1 inside the file the its a new game else its not
+        data = file.read()
+        file.close()
+        if int(data):
+            self.new_game = True
+            with open('assets/data/new_game.txt','w') as file:
+                file.write('0')
+        else:
+            self.new_game = False
 
     def update_menu_items(self):
         x = 80
@@ -364,12 +383,15 @@ class Menu:
                     else: # Quit
                         self.want_to_quit = True
         
-    def draw_quit(self):
+    def draw_quit(self,number):
         FONT = pygame.font.Font('assets/font/JungleAdventurer.ttf', 50)
-        B = pygame.Rect(200 , 300, 500, 300)
-        pygame.draw.rect(WINDOW,(255, 188, 151),B)
-        WINDOW.blit(FONT.render("Are you sure you ",True,VARIABLE.WHITE),(B.x + 60, B.y + 50 ))
-        WINDOW.blit(FONT.render("want to Exit ?",True,VARIABLE.WHITE),(B.x + 60, B.y + 100))
+        if number == 1:
+            B = pygame.Rect(200 , 300, 500, 300)
+        elif number == 2:
+            B = pygame.Rect(500 , 400, 400, 300)
+        pygame.draw.rect(WINDOW,(20, 47, 67),B)
+        WINDOW.blit(FONT.render("Are you sure you ",True,VARIABLE.WHITE),(B.x + 40, B.y + 50 ))
+        WINDOW.blit(FONT.render("want to Exit ?",True,VARIABLE.WHITE),(B.x + 55, B.y + 100))
         yes = WEAPON.YES.get_rect(center=(B.x + 150, B.y + 200 ))
         no = WEAPON.NO.get_rect(center=(B.x + 300, B.y + 200 ))
         WINDOW.blit(WEAPON.YES,yes)
@@ -383,7 +405,7 @@ class Menu:
             if pygame.Rect.collidepoint(no,mpos):
                 self.want_to_quit = False
 
-    def wait(self,text,count=0):
+    def wait(self,text,count):
         #this function will update the text after one sec
         if count == len(text):
             self.new_start = True
@@ -391,7 +413,7 @@ class Menu:
         else:
             self.new_text = text[count]
             count += 1
-            time.sleep(.5)
+            time.sleep(.1)
             self.wait(text,count) 
         
     def draw_intro(self,text):
@@ -408,7 +430,13 @@ class Menu:
         with open('assets/data/new_user_info.txt','r') as file:
             intro_text = file.readlines()
         intro_text = [i.strip() for i in intro_text]
-        new_thread = threading.Thread(target=self.wait,args=(intro_text,))
+
+        if self.new_game:
+            index = 0
+        else:
+            index = 11
+
+        new_thread = threading.Thread(target=self.wait,args=(intro_text,index))
         new_thread.start()
         running = True
         pause = False
@@ -428,4 +456,39 @@ class Menu:
 
         
 
+
+class Inventory:
+    def __init__(self):
+        self.weapons_owned = []
+        self.task_bar = pygame.Rect(0,0,VARIABLE.WIDTH,70)
+        self.lives = 5
+        with open('assets/data/balance.txt','r') as file:
+            data = file.read()
+        self.coin = 0
+        self.token = int(data)
+
+    # this is the function for the shop section
+    def draw(self):
+        pass
+    def draw_task_bar(self,player,enemy):
+        pygame.draw.rect(WINDOW,(255, 203, 203),self.task_bar)
+        if self.lives <= 10:
+            #draw lives
+            self.f_lives = VARIABLE.TASK_BAR1.render('| L '*self.lives,True,VARIABLE.WHITE)
+            # the reason i used variable.pause is because i want to use the same font as the pause menu
+            self.FONT1 = VARIABLE.TASK_BAR2.render(f'{" "*7}Z{" "*15}TT',True,VARIABLE.WHITE)
+            self.FONT2 = VARIABLE.TASK_BAR2.render(f'{self.coin}{" "*9}{self.token}',True,(20, 47, 67))
+            WINDOW.blit(self.f_lives,(50,self.task_bar.height // 2 - 10))
+        WINDOW.blit(self.FONT1,(VARIABLE.WIDTH - 300,self.task_bar.height // 2 - 10))
+        WINDOW.blit(self.FONT2,(VARIABLE.WIDTH - 300,self.task_bar.height // 2 - 10))
+
+        self.coin = player.score // 5
+        for enemy in enemy.Elist:
+            if pygame.Rect.colliderect(enemy.rect,player.player):
+                self.lives -= 1
+                rand_l  = [-1,1]
+                new_rand = random.randint(0,1)
+                n_speed = rand_l[new_rand] * 200
+                enemy.rect.x += n_speed
+                
 
